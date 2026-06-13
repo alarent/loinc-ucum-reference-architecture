@@ -23,3 +23,17 @@ terms.
 UCUM (Unified Code for Units of Measure) is subject to the UCUM
 Copyright Notice and License. UCUM unit tokens are not licensed under
 this repository's terms.
+
+---
+
+LOINC attribution
+This material references content from LOINC® (https://loinc.org).
+LOINC is copyright © 1995-present, Regenstrief Institute, Inc. and is available
+at no cost under the license at https://loinc.org/license/. LOINC® is a registered
+United States trademark of Regenstrief Institute, Inc. LOINC version referenced: 2.82.
+
+UCUM attribution
+This material references the Unified Code for Units of Measure (UCUM).
+UCUM is copyright © 1999-present, Regenstrief Institute, Inc. and The UCUM
+Organization. UCUM is available at https://ucum.org under the UCUM license
+(https://ucum.org/license). UCUM version referenced: 2.2.

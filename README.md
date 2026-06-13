@@ -143,3 +143,17 @@ SPDX expression: `Apache-2.0 AND CC-BY-4.0`. Dual licensing финализиро
 - **Email:** [zaverachnikita@gmail.com](mailto:zaverachnikita@gmail.com)
 - **GitHub:** [@alarent](https://github.com/alarent)
 - **Telegram:** [@alarent](https://t.me/alarent)
+
+## Стандарты и атрибуция
+
+Проект — независимая reference-архитектура, которая *опирается* на открытые
+стандарты LOINC и UCUM. Проект не аффилирован с Regenstrief Institute и не
+поддерживается им.
+
+- **LOINC** (Logical Observation Identifiers, Names and Codes) — © Regenstrief Institute, Inc.
+  Сайт: <https://loinc.org> · Лицензия: <https://loinc.org/license/> · Версия: 2.82.
+  LOINC® — зарегистрированный товарный знак Regenstrief Institute, Inc.
+- **UCUM** (Unified Code for Units of Measure) — © Regenstrief Institute, Inc. и The UCUM Organization.
+  Спецификация: <https://ucum.org/ucum> · Исходник (GitHub): <https://github.com/ucum-org/ucum> · Лицензия: <https://ucum.org/license> · Версия: 2.2.
+
+Полные копирайт-нотисы — в файле [NOTICE](NOTICE).
