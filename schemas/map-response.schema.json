@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/map-response.schema.json",
+  "title": "LOINC/UCUM Reference Map Response",
+  "description": "Wire-format response для POST /v1/map. Обёртка над N envelopes с top-level preconditions-дискриминатором.",
+  "oneOf": [
+    { "$ref": "#/$defs/response_passed" },
+    { "$ref": "#/$defs/response_failed" }
+  ],
+  "$defs": {
+    "response_passed": {
+      "type": "object",
+      "required": ["preconditions", "input_id", "envelopes", "audit"],
+      "additionalProperties": false,
+      "properties": {
+        "preconditions": { "const": "passed" },
+        "input_id": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "Deterministic hash входного бята-стрима (для tracing и idempotent retry)"
+        },
+        "envelopes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "output.schema.json" },
+          "description": "Кардинальность совпадает с input.biomarkers (ADR-0006 cardinality)"
+        },
+        "audit": { "$ref": "#/$defs/wrapper_audit" }
+      }
+    },
+    "response_failed": {
+      "type": "object",
+      "required": ["preconditions", "input_id", "error", "audit"],
+      "additionalProperties": false,
+      "properties": {
+        "preconditions": { "const": "failed" },
+        "input_id": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "error": { "$ref": "#/$defs/precondition_error" },
+        "audit": { "$ref": "#/$defs/wrapper_audit" }
+      }
+    },
+    "precondition_error": {
+      "type": "object",
+      "required": ["code", "message", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "PRECONDITION_FAILED",
+            "INPUT_SCHEMA_VIOLATION"
+          ],
+          "description": "PRECONDITION_FAILED — семантический invariant (например, raw_value:''); INPUT_SCHEMA_VIOLATION — не прошла JSON Schema валидация"
+        },
+        "message": { "type": "string", "minLength": 1, "description": "EN; локализация — v1.1" },
+        "path": {
+          "type": "string",
+          "pattern": "^\\$\\.",
+          "description": "JSONPath до невалидного поля, например '$.biomarkers[2].raw_value'"
+        }
+      }
+    },
+    "wrapper_audit": {
+      "type": "object",
+      "required": ["request_timestamp", "loinc_version", "ucum_version"],
+      "additionalProperties": false,
+      "properties": {
+        "request_timestamp": { "type": "string", "format": "date-time" },
+        "loinc_version": { "type": "string", "description": "Snapshot в момент запроса (ADR-0005)" },
+        "ucum_version": { "type": "string" }
+      }
+    }
+  }
+}

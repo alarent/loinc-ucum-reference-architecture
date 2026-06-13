@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/output.schema.json",
+  "title": "LOINC/UCUM Reference Envelope",
+  "description": "Per-biomarker mapping envelope. Discriminated by `status`: success (mapping resolved) or rejected (semantic failure).",
+  "oneOf": [
+    { "$ref": "#/$defs/success_envelope" },
+    { "$ref": "#/$defs/rejected_envelope" }
+  ],
+  "$defs": {
+    "success_envelope": {
+      "type": "object",
+      "required": ["status", "mapping_id", "primary", "value", "context", "alternatives", "audit"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "const": "success" },
+        "mapping_id": { "type": "string", "minLength": 1 },
+        "primary": { "$ref": "#/$defs/primary_coding" },
+        "value": { "$ref": "#/$defs/value" },
+        "context": { "$ref": "#/$defs/context" },
+        "alternatives": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/alternative_coding" }
+        },
+        "audit": { "$ref": "#/$defs/audit_success" }
+      }
+    },
+    "rejected_envelope": {
+      "type": "object",
+      "required": ["status", "mapping_id", "error", "input_echo", "audit"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "const": "rejected" },
+        "mapping_id": { "type": "string", "minLength": 1 },
+        "error": { "$ref": "#/$defs/error" },
+        "input_echo": { "$ref": "#/$defs/input_echo" },
+        "audit": { "$ref": "#/$defs/audit_rejected" }
+      }
+    },
+    "primary_coding": {
+      "type": "object",
+      "required": ["system", "code", "display"],
+      "additionalProperties": false,
+      "properties": {
+        "system": { "const": "LOINC" },
+        "code": { "type": "string", "pattern": "^[0-9]+-[0-9]$" },
+        "display": { "type": "string", "minLength": 1, "description": "LOINC long common name, invariant EN" }
+      }
+    },
+    "alternative_coding": {
+      "type": "object",
+      "required": ["system", "code", "display", "score"],
+      "additionalProperties": false,
+      "properties": {
+        "system": { "const": "LOINC" },
+        "code": { "type": "string", "pattern": "^[0-9]+-[0-9]$" },
+        "display": { "type": "string", "minLength": 1 },
+        "score": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "value": {
+      "type": "object",
+      "required": ["numeric", "string", "unit", "ucum_canonical"],
+      "additionalProperties": false,
+      "properties": {
+        "numeric": { "type": ["number", "null"] },
+        "string": { "type": ["string", "null"], "minLength": 1 },
+        "unit": { "type": ["string", "null"], "minLength": 1, "description": "Russian-convention unit для UI" },
+        "ucum_canonical": { "type": ["string", "null"], "minLength": 1, "description": "Strict UCUM canonical form" }
+      },
+      "oneOf": [
+        {
+          "description": "Quantitative result",
+          "properties": {
+            "numeric": { "type": "number" },
+            "string": { "const": null },
+            "unit": { "type": "string" },
+            "ucum_canonical": { "type": "string" }
+          }
+        },
+        {
+          "description": "Qualitative result (e.g. 'отрицательно')",
+          "properties": {
+            "numeric": { "const": null },
+            "string": { "type": "string" },
+            "unit": { "const": null },
+            "ucum_canonical": { "const": null }
+          }
+        }
+      ]
+    },
+    "context": {
+      "type": "object",
+      "required": ["sample_type", "fasting_status", "method", "context_completeness"],
+      "additionalProperties": false,
+      "properties": {
+        "sample_type": { "$ref": "#/$defs/context_field" },
+        "fasting_status": { "$ref": "#/$defs/context_field" },
+        "method": { "$ref": "#/$defs/context_field" },
+        "context_completeness": {
+          "type": "string",
+          "enum": ["full", "partial", "minimal"]
+        }
+      }
+    },
+    "context_field": {
+      "description": "Контекстное поле в одном из трёх состояний (ADR-0004): конкретное значение, null (отсутствует), 'не применимо'",
+      "oneOf": [
+        { "type": "string", "minLength": 1, "not": { "const": "not_applicable" } },
+        { "type": "null" },
+        { "const": "not_applicable" }
+      ]
+    },
+    "audit_success": {
+      "type": "object",
+      "required": [
+        "loinc_version", "ucum_version", "mapping_timestamp",
+        "primary_score", "top_score_by_resolver", "score_delta_vs_top",
+        "rule_applied", "rule_overrode_score",
+        "method_alias_group", "ucum_conversion",
+        "remap_source", "current_version_status", "replaced_by",
+        "candidates_returned", "policy_version", "resolver_version"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "loinc_version": { "type": "string", "description": "Immutable snapshot, ADR-0005" },
+        "ucum_version": { "type": "string", "description": "Immutable snapshot, ADR-0005" },
+        "mapping_timestamp": { "type": "string", "format": "date-time" },
+        "primary_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "top_score_by_resolver": { "type": "number", "minimum": 0, "maximum": 1 },
+        "score_delta_vs_top": { "type": "number" },
+        "rule_applied": { "type": ["string", "null"], "description": "Priority rule id из ADR-0003" },
+        "rule_overrode_score": { "type": "boolean" },
+        "method_alias_group": {
+          "type": "string",
+          "pattern": "^loinc:component:[a-f0-9]+$",
+          "description": "ADR-0007 deterministic alias group"
+        },
+        "ucum_conversion": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/ucum_conversion" }
+          ]
+        },
+        "remap_source": {
+          "type": ["string", "null"],
+          "description": "mapping_id исходного mapping для derived через /remap (ADR-0005)"
+        },
+        "current_version_status": {
+          "type": "string",
+          "enum": ["current", "deprecated", "replaced", "removed"],
+          "description": "Computed в момент запроса, ADR-0005"
+        },
+        "replaced_by": {
+          "type": ["string", "null"],
+          "description": "LOINC code заменяющего кода, computed"
+        },
+        "candidates_returned": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Общее число candidates от resolver, ADR-0003 reproducibility"
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Версия priority policy, ADR-0003 reproducibility"
+        },
+        "resolver_version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Версия resolver-модели, ADR-0003 reproducibility"
+        },
+        "capability_level": {
+          "type": "string",
+          "enum": ["L1", "L2", "L3", "L4"],
+          "description": "Активный capability level развёртывания (ADR-0008). Эхо из конфига; делает ответ самодостаточным для разведения semantic-null vs gating-null. Optional в v1.0; становится фактически required при поддержке нескольких уровней."
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Extension port (ADR-0003): необязательный bag для нестандартных audit-полей. Ядро audit остаётся строгим (additionalProperties: false); рост идёт сюда без breaking changes. Поле, ставшее несущим для интероперабельности, переносится в ядро через ADR."
+        }
+      }
+    },
+    "audit_rejected": {
+      "type": "object",
+      "required": ["loinc_version", "ucum_version", "mapping_timestamp", "ucum_conversion"],
+      "additionalProperties": false,
+      "properties": {
+        "loinc_version": { "type": "string" },
+        "ucum_version": { "type": "string" },
+        "mapping_timestamp": { "type": "string", "format": "date-time" },
+        "ucum_conversion": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/ucum_conversion" }
+          ],
+          "description": "Заполняется если UCUM parse/transliteration успел, но conversion failed"
+        },
+        "capability_level": {
+          "type": "string",
+          "enum": ["L1", "L2", "L3", "L4"],
+          "description": "Активный capability level развёртывания (ADR-0008), симметрично audit_success."
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Extension port (ADR-0003): необязательный bag, симметрично audit_success."
+        }
+      }
+    },
+    "ucum_conversion": {
+      "type": "object",
+      "required": ["input_unit", "canonical_unit", "factor", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "input_unit": { "type": "string", "minLength": 1 },
+        "canonical_unit": { "type": "string", "minLength": 1 },
+        "factor": { "type": "number" },
+        "path": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["mass_prefix_scaling", "exponent_algebra", "identity"] }
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message", "stage_failed"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "UCUM_PARSE_FAILED",
+            "UCUM_NO_CONVERSION_PATH",
+            "UCUM_AMBIGUOUS_UNIT",
+            "LOINC_NO_CANDIDATE"
+          ]
+        },
+        "message": { "type": "string", "minLength": 1, "description": "Читаемое сообщение, EN (локализация v1.1)" },
+        "stage_failed": {
+          "type": "string",
+          "enum": ["ucum_parse", "conversion_path_check", "loinc_resolution", "ambiguity_resolution"]
+        }
+      }
+    },
+    "input_echo": {
+      "type": "object",
+      "required": ["raw_name", "raw_value", "raw_unit", "raw_ref", "raw_comment"],
+      "additionalProperties": false,
+      "properties": {
+        "raw_name": { "type": "string" },
+        "raw_value": { "type": "string" },
+        "raw_unit": { "type": ["string", "null"] },
+        "raw_ref": { "type": ["string", "null"] },
+        "raw_comment": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

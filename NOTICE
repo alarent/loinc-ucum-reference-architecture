@@ -1,0 +1,25 @@
+LOINC/UCUM Reference Architecture
+Copyright 2026 Nikita Zaverach
+
+This product includes software and machine-readable artifacts
+(JSON Schemas in schemas/, example envelopes in examples/) licensed
+under the Apache License, Version 2.0.
+
+Documentation (docs/**/*.md, README.md and other prose) is licensed
+separately under the Creative Commons Attribution 4.0 International
+License (CC-BY-4.0); see the LICENSE-docs file.
+
+SPDX-License-Identifier: Apache-2.0 AND CC-BY-4.0
+
+---
+
+Third-party standards (not covered by this repository's licenses):
+
+LOINC is a registered trademark of Regenstrief Institute, Inc.
+LOINC codes, tables, and descriptions are subject to the Regenstrief
+Institute LOINC license and are not licensed under this repository's
+terms.
+
+UCUM (Unified Code for Units of Measure) is subject to the UCUM
+Copyright Notice and License. UCUM unit tokens are not licensed under
+this repository's terms.
