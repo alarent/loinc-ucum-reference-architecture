@@ -76,6 +76,13 @@ Resolver возвращает candidates:
     {"system": "LOINC", "code": "1547-9", "display": "Fasting glucose [Moles/volume] in Serum or Plasma", "score": 0.87},
     {"system": "LOINC", "code": "15074-8", "display": "Glucose [Moles/volume] in Blood", "score": 0.62}
   ],
+  "input_echo": {
+    "raw_name": "Глюкоза",
+    "raw_value": "5.5",
+    "raw_unit": "ммоль/л",
+    "raw_ref": "3.9–6.1",
+    "raw_comment": null
+  },
   "audit": {
     "loinc_version": "2.82",
     "ucum_version": "2.2",

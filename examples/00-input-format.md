@@ -83,6 +83,13 @@
         "context_completeness": "partial"
       },
       "alternatives": [],
+      "input_echo": {
+        "raw_name": "Глюкоза",
+        "raw_value": "5,4",
+        "raw_unit": "ммоль/л",
+        "raw_ref": "3.9–6.1",
+        "raw_comment": null
+      },
       "audit": {
         "loinc_version": "2.82",
         "ucum_version": "2.2",

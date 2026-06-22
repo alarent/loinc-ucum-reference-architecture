@@ -43,7 +43,7 @@
 5. **Резолвер конфликтов.** Применение priority policy к кандидатам, формирование финальной гипотезы и alternatives.
 ### Выходной интерфейс
 Единый контракт для всех потребителей — независимо от системы-источника. Версионируется отдельно от версий LOINC и UCUM (см. versioning).
-## Контракты между слоями
+## Ко��тракты между слоями
 **Входной адаптер → Ядро нормализации:** нормализованный raw-object с обязательными полями `{test_identifier, value, unit_raw, metadata}`. Всё, что не приведено к этой форме, до нормализационного ядра не доходит.
 **Ядро нормализации → Выходной интерфейс:** полный структурированный объект с обязательными полями `{loinc, value, context, alternatives, audit}`. Отсутствие любого обязательного поля — ошибка, не допустимый граничный случай.
 **Выходной интерфейс → потребитель (приложение):** контракт версионируется отдельно от версий стандартов. Ломающие совместимость изменения в API — новая major-версия интерфейса.
@@ -65,6 +65,7 @@ Output: {
   value: { numeric: 250, string: null, unit: "ng/mL", ucum_canonical: "ng/mL" },
   context: { sample_type: "serum", fasting_status: null, method: null, context_completeness: "partial" },
   alternatives: [ { system: "LOINC", code: "20567-4", display: "Ferritin [Mass/volume] in Plasma", score: 0.65 } ],
+  input_echo: { raw_name: "Ферритин", raw_value: "250", raw_unit: "нг/мл", raw_ref: null, raw_comment: null },
   audit: {
     loinc_version: "2.82", ucum_version: "2.2", mapping_timestamp: "2026-04-24T10:23:00Z",
     primary_score: 0.98, top_score_by_resolver: 0.98, score_delta_vs_top: 0,

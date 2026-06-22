@@ -10,7 +10,7 @@
   "$defs": {
     "success_envelope": {
       "type": "object",
-      "required": ["status", "mapping_id", "primary", "value", "context", "alternatives", "audit"],
+      "required": ["status", "mapping_id", "primary", "value", "context", "alternatives", "input_echo", "audit"],
       "additionalProperties": false,
       "properties": {
         "status": { "const": "success" },
@@ -22,6 +22,7 @@
           "type": "array",
           "items": { "$ref": "#/$defs/alternative_coding" }
         },
+        "input_echo": { "$ref": "#/$defs/input_echo" },
         "audit": { "$ref": "#/$defs/audit_success" }
       }
     },

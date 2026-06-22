@@ -82,6 +82,13 @@ Schema validation по input.schema.json: `lab`, `date`, `type`, `biomarkers[]` 
     {"system": "LOINC", "code": "20567-4", "display": "Ferritin [Mass/volume] in Plasma", "score": 0.71},
     {"system": "LOINC", "code": "24373-3", "display": "Ferritin [Mass/volume] in Blood", "score": 0.45}
   ],
+  "input_echo": {
+    "raw_name": "Ferritin",
+    "raw_value": "85",
+    "raw_unit": "ng/mL",
+    "raw_ref": "30–400",
+    "raw_comment": null
+  },
   "audit": {
     "loinc_version": "2.82",
     "ucum_version": "2.2",

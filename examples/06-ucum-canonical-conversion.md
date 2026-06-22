@@ -59,6 +59,13 @@
     "context_completeness": "partial"
   },
   "alternatives": [],
+  "input_echo": {
+    "raw_name": "Альбумин",
+    "raw_value": "4.2",
+    "raw_unit": "г/дл",
+    "raw_ref": "3.5–5.2",
+    "raw_comment": null
+  },
   "audit": {
     "loinc_version": "2.82",
     "ucum_version": "2.2",

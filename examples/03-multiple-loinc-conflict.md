@@ -81,6 +81,13 @@ Matching: «HPLC» в `context.method` → LOINC `system=Bld, method=HPLC` → 1
     {"system": "LOINC", "code": "17855-8", "display": "Hemoglobin A1c/Hemoglobin.total in Blood by calculation", "score": 0.51},
     {"system": "LOINC", "code": "71875-9", "display": "Hemoglobin A1c/Hemoglobin.total in Blood by Immunoassay", "score": 0.43}
   ],
+  "input_echo": {
+    "raw_name": "Hemoglobin A1c",
+    "raw_value": "5.8",
+    "raw_unit": "%",
+    "raw_ref": "4.0–6.0",
+    "raw_comment": "Метод: HPLC"
+  },
   "audit": {
     "loinc_version": "2.82",
     "ucum_version": "2.2",
@@ -141,7 +148,7 @@ Matching: «HPLC» в `context.method` → LOINC `system=Bld, method=HPLC` → 1
 - **4548-4 (top по score) остался видимым в ****`alternatives[]`****.** Если клиницист при ручной проверке решит, что method-специфика в данном контексте не критична — он может использовать 4548-4 из alternatives без повторного прогона pipeline.
 - **Правило «prefer_method_specific» — реалистичный кандидат в priority policy v1.0.** Он имеет ясный триггер (`context.method != null`) и ясное действие; это хороший шаблон для остальных правил.
 - **Само матчинг «HPLC» → LOINC method axis** — отдельный вопрос. Для этого нужен доступ к LOINC parts (component, system, method и т. д.), либо fuzzy матчинг по display, либо отдельная маппинг-таблица method-aliases. Ниже в открытых вопросах.
-- **Сценарий, где правило не сработает.** Если бы method="electrochemiluminescence" и в candidates не было бы LOINC с такой method-осью — правило не сработало бы, primary стал бы 4548-4 с `rule_applied=null` (выбор по score). Контракт и в этом случае возвращает осмысленный результат, просто без method-точности.
+- **Сценарий, где правило не сработает.** Если бы method="electrochemiluminescence" и в candidates не было бы LOINC с та��ой method-осью — правило не сработало бы, primary стал бы 4548-4 с `rule_applied=null` (выбор по score). Контракт и в этом случае возвращает осмысленный результат, просто без method-точности.
 ## Открытые вопросы из этого example
 - [x] **~~Расширение audit-схемы.~~** **Resolved 2026-06-01:** `top_score_by_resolver` и `score_delta_vs_top` — обязательные поля `audit_success` в output.schema.json; туда же по ADR-0003 п.5 добавлены `candidates_returned`, `policy_version`, `resolver_version`.
 - [ ] **Threshold для override.** При `score_delta_vs_top` ниже некоторого порога (например, -0.30) выводить ли warning в audit, или вообще переходить на score-based? Это уже было в ADR-0003 открытым вопросом, example делает его осязаемым.

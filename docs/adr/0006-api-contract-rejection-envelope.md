@@ -14,8 +14,9 @@
 - `GET /v1/mappings/{mapping_id}` — получить mapping; computed-поля (`current_version_status`, `replaced_by`) вычисляются в момент запроса. Возвращает один envelope
 ### 2. Unified envelope (oneOf)
 - Единая JSON Schema `output.schema.json` с дискриминатором `status` (`"success" | "rejected"`)
-- При `status: "success"` envelope содержит `primary`, `value`, `context`, `alternatives`, `audit` (см. Schemas · индекс)
+- При `status: "success"` envelope содержит `primary`, `value`, `context`, `alternatives`, `input_echo`, `audit` (см. Schemas · индекс)
 - При `status: "rejected"` envelope содержит `error`, `input_echo`, `audit` (`primary`/`value`/`alternatives` отсутствуют — их нет по семантике)
+- `input_echo` присутствует симметрично в обеих ветках: на success-пути он даёт полный audit trail и verbatim-passthrough `raw_ref` (в т.ч. возрастно/полово-стратифицированных референсов). Введено в v2.0.0 (breaking: success теперь обязан нести `input_echo`)
 - `mapping_id` присутствует в обоих вариантах, `audit.loinc_version`/`audit.ucum_version`/`audit.mapping_timestamp` — тоже
 ### 3. Rejection persistence
 - Rejected mappings получают стабильный `mapping_id` и сохраняются в audit log наравне с success
@@ -68,3 +69,4 @@
 - 2026-05-30 — создан ADR-0006 (API contract + rejection envelope) на основании findings из worked example 04
 - 2026-05-30 — patch: явная cardinality `/v1/map` (1 input → N envelopes), добавлена секция «Два слоя отказа» (preconditions vs mapping-level), уточнены cardinality `/v1/remap` и `GET /v1/mappings/{id}`. Триггер: findings из worked example 00
 - 2026-05-31 — housekeeping pass: закрыты все 6 open question (4 deferred в Roadmap, 1 в ADR candidates backlog, 1 делегирован [preconditions.md](../preconditions.md) + input.schema.json)
+- 2026-06-22 — v2.0.0 (breaking): `input_echo` стал обязательным в success-ветке envelope, симметрично rejected. Полный audit trail на success-пути + verbatim-сохранение `raw_ref` (включая стратифицированные референсы). Обновлены output.schema.json, worked examples 00–03/05/06, README, architecture, Schemas · индекс

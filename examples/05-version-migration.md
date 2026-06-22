@@ -52,6 +52,13 @@ Mapping выполнен в момент receipt лабрезультата (202
 		"method": "ECLIA",
 		"context_completeness": "full"
 	},
+	"input_echo": {
+		"raw_name": "Cortisol",
+		"raw_value": "18",
+		"raw_unit": "µg/dL",
+		"raw_ref": "6.2–19.4",
+		"raw_comment": "Метод: ECLIA; забор 08:15"
+	},
 	"audit": {
 		"loinc_version": "2.76",
 		"ucum_version": "2.1",
@@ -114,6 +121,13 @@ Reference layer обновляет внутренние таблицы: `referen
 		"fasting_status": "fasting",
 		"method": "ECLIA",
 		"context_completeness": "full"
+	},
+	"input_echo": {
+		"raw_name": "Cortisol",
+		"raw_value": "18",
+		"raw_unit": "µg/dL",
+		"raw_ref": "6.2–19.4",
+		"raw_comment": "Метод: ECLIA; забор 08:15"
 	},
 	"audit": {
 		"loinc_version": "2.76",
@@ -182,6 +196,13 @@ Reference layer выполняет новый mapping в текущей верс
 		"fasting_status": "fasting",
 		"method": "ECLIA",
 		"context_completeness": "full"
+	},
+	"input_echo": {
+		"raw_name": "Cortisol",
+		"raw_value": "18",
+		"raw_unit": "µg/dL",
+		"raw_ref": "6.2–19.4",
+		"raw_comment": "Метод: ECLIA; забор 08:15"
 	},
 	"audit": {
 		"loinc_version": "2.82",

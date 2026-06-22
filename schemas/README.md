@@ -37,8 +37,9 @@ Resolved decisions ниже фиксируют принципы, по котор
 - Source: worked example 05 + ADR-0005
 ### Unified envelope (ADR-0006)
 - `output.schema.json` — единый файл с `oneOf` по дискриминатору `status` (`"success" | "rejected"`)
-- Success-ветка: `primary`, `value`, `context`, `alternatives`, `audit`
+- Success-ветка: `primary`, `value`, `context`, `alternatives`, `input_echo`, `audit`
 - Rejected-ветка: `error` (`code`, `message`, `stage_failed`), `input_echo`, `audit`
+- `input_echo` присутствует симметрично в обеих ветках (success и rejected): эхо сырого входа даёт полный audit trail на success-пути и verbatim-сохранение `raw_ref` (включая возрастно/полово-стратифицированные референсы). Введено в v2.0.0 (breaking)
 - В обеих ветках обязательны: `mapping_id`, `audit.loinc_version`, `audit.ucum_version`, `audit.mapping_timestamp`
 - Альтернатива  «два отдельных schema-файла (success/rejected)» отвергнута: перекладывает discrimination на потребителя. Альтернатива  «HTTP-семантика (200 vs 422)» отвергнута: rejection — валидный бизнес-результат, не клиентская ошибка
 - Source: worked example 04 + ADR-0006
