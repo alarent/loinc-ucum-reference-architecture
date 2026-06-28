@@ -49,7 +49,7 @@
   "value": {
     "numeric": 42.0,
     "string": null,
-    "unit": "г/л",
+    "unit": "g/dL",
     "ucum_canonical": "g/L"
   },
   "context": {
@@ -91,7 +91,7 @@
   }
 }
 ```
-- `value.unit` сохраняет российскую конвенцию «г/л» (после conversion `г/дл` → `г/л`, transliteration обратно не выполняется для UI)
+- `value.unit` = единица как сообщил источник, в UCUM-нотации до конверсии (`г/дл` → `g/dL`); дословный ввод (`г/дл`) сохраняется в `input_echo.raw_unit`. Операционная пара значения — `value.numeric` + `value.ucum_canonical` (42.0 g/L)
 - `value.ucum_canonical` — strict UCUM form `g/L` для machine consumption
 - `audit.ucum_conversion` — новое audit-поле с traceability conversion: input_unit, canonical_unit, factor, path. Поле существует только когда factor ≠ 1 (иначе null)
 ## Что валидирует
@@ -106,3 +106,4 @@
 ## История изменений
 - 2026-05-30 — создан worked example 06 (UCUM canonical conversion, альбумин г/дл → g/L coefficient 10)
 - 2026-06-05 — output envelope приведён к полному канону output.schema: добавлен `value.string` и reproducibility-поля audit (candidates_returned, policy_version, resolver_version); method_alias_group приведён к hex-pattern `^loinc:component:[a-f0-9]+$`
+- 2026-06-27 — v2.1.0: value.unit = reported unit (pre-conversion) в UCUM-нотации (г/л → g/dL); value.numeric и value.ucum_canonical (42.0 g/L) без изменений

@@ -20,11 +20,11 @@
 ## Решение
 **LOINC — первичный идентификатор в выходном контракте для любого лабораторного observation. Другие кодовые системы (внутренние коды источника, национальные классификаторы) могут жить в выходном контракте как secondary identifiers, но не заменяют LOINC.**
 Конкретика:
-1. **Статус в контракте.** Поле `loinc_code` — обязательное в любом успешном ответе. Отсутствие LOINC-кода — сигнал reject-статуса, а не «nullable field».
-2. **Альтернативы.** Поле `alternatives[]` — массив вторых/третьих LOINC-кандидатов с score'ами (см. ADR-0003). Допускаются и не-LOINC коды (внутренние коды источника), но с явной пометкой `coding_system`. Выбран uniform массив с discriminator-полем `coding_system` вместо сегрегации по типу (`alternatives.loinc[]` + `alternatives.proprietary[]`) — единообразная итерация потребителя важнее структурного разделения; type-фильтрация — обязанность discriminator-поля, не структуры массива.
-3. **Связь с FHIR.** Выходной контракт структурно мапится на FHIR Observation.code без промежуточных трансформаций: `loinc_code` → Coding.code, `system` = `"http://loinc.org"`, `display` → Coding.display.
-4. **Secondary identifiers.** Если источник принёс внутренний код (проприетарный справочник лаборатории, национальный классификатор), он сохраняется в audit trail (исходные данные) и опционально в `alternatives[]`. Самостоятельным «path of truth» он не становится.
-5. **Display string.** Рядом с `loinc_code` в контракте всегда возвращается LOINC long common name на английском — именно он служит human-readable подтверждением и сверению с внешними инструментами. Локализованные display — ответственность слоя ниже по потоку.
+1. **Статус в контракте.** Объект `primary` (`{ system: "LOINC", code, display }`) — обязательный в любом успешном ответе (см. output.schema.json). Отсутствие LOINC-маппинга — сигнал reject-статуса (rejected-ветка), а не «nullable field».
+2. **Альтернативы.** Поле `alternatives[]` — массив вторых/третьих LOINC-кандидатов с score'ами (см. ADR-0003). В v1.0 `alternatives[]` — **только LOINC**: каждый элемент имеет `system: "LOINC"` (const в output.schema.json), `code`, `display`, `score`. Не-LOINC идентификаторы источника в `alternatives[]` не попадают (см. п.4); это сознательно сужено относительно ранней редакции с discriminator-полем `coding_system` — uniform LOINC-массив проще для потребителя, а secondary-коды живут в audit/input_echo.
+3. **Связь с FHIR.** Выходной контракт структурно мапится на FHIR Observation.code без промежуточных трансформаций: `primary.code` → Coding.code, `primary.system` = `"http://loinc.org"`, `primary.display` → Coding.display.
+4. **Secondary identifiers.** Если источник принёс внутренний код (проприетарный справочник лаборатории, национальный классификатор), он сохраняется в audit trail / `input_echo` (исходные данные), но **не** в `alternatives[]` (там только LOINC, см. п.2). Самостоятельным «path of truth» он не становится; structured-поле под не-LOINC secondary identifiers — Phase 2.
+5. **Display string.** В `primary.display` в контракте всегда возвращается LOINC long common name на английском — именно он служит human-readable подтверждением и сверению с внешними инструментами. Локализованные display — ответственность слоя ниже по потоку.
 ## Альтернативы и почему отвергнуты
 ### А1. Внутренний проприетарный справочник
 Построить собственную таксономию и мапить в неё все внешние кодовые системы по мере необходимости.
@@ -53,7 +53,7 @@ FHIR Observation.code допускает массив codings — выдават
 ## Открытые вопросы
 Все четыре исходных открытых вопроса закрыты на housekeeping pass 2026-05-31:
 - **Display long common name (всегда vs flag).** Решено в теле ADR (Решение п.5): английский LOINC long name возвращается всегда; локализация — ответственность Worked examples 01–03 валидируют.
-- **`alternatives[]`**** + ****`coding_system`**** (uniform vs сегрегация).** Решено в теле ADR (Решение п.2): uniform массив с discriminator-полем `coding_system`; rationale добавлен inline.
+- **`alternatives[]`**** + ****`coding_system`**** (uniform vs сегрегация).** Решено в теле ADR (Решение п.2): в v1.0 `alternatives[]` — только LOINC (`system: "LOINC"` const), discriminator-поле `coding_system` снято как избыточное; не-LOINC secondary — в audit/input_echo, structured-поле в Phase 2.
 - **Deprecated LOINC коды.** Делегировано [ADR-0005 · Version-aware mapping](0005-version-aware-mapping.md): immutable snapshot + computed `current_version_status` + `replaced_by` + explicit `/remap` flow. Worked example 05 валидирует полный цикл.
 - **Русский LOINC display в response.** Мигрировано в v1.1 backlog как опциональное поле `display_localized`. Reference v1.0 остаётся language-invariant (English LOINC long name); локализация решается через FHIR extension либо downstream UI layer без breaking change в v1.1.
 ## Worked example связки
@@ -64,3 +64,4 @@ FHIR Observation.code допускает массив codings — выдават
 ## История изменений
 - 2026-05-29 — initial draft, status Accepted для v1.0
 - 2026-05-31 — housekeeping pass: закрыты все 4 open question (3 уже решены в теле ADR или в ADR-0005, 1 мигрирован в v1.1 backlog); добавлено rationale для uniform `alternatives[]` choice
+- 2026-06-27 — v2.1.0: naming → output.schema (`loinc_code` → `primary.{system,code,display}`, `coding_system` снят); `alternatives[]` LOINC-only (`system: "LOINC"` const); не-LOINC secondary — в audit/input_echo, structured-поле в Phase 2

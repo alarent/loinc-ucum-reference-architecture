@@ -26,7 +26,7 @@ Mapping выполнен в момент receipt лабрезультата (202
 ```json
 {
 	"status": "success",
-	"mapping_id": "map_2024_03_15_abc123",
+	"mapping_id": "map_2024-03-15_abc123",
 	"primary": {
 		"system": "LOINC",
 		"code": "2143-6",
@@ -80,7 +80,7 @@ Mapping выполнен в момент receipt лабрезультата (202
 		"replaced_by": null,
 		"candidates_returned": 2,
 		"policy_version": "1.0.0",
-		"resolver_version": "2024.03"
+		"resolver_version": "semantic-resolver-v1"
 	}
 }
 ```
@@ -90,13 +90,13 @@ Mapping выполнен в момент receipt лабрезультата (202
 - `current_version_status: "current"` в момент mapping (это же latest версия).
 ## Релиз LOINC 2.82 (начало 2026, иллюстративный сценарий)
 Допустим, в LOINC 2.82 код `2143-6` получает статус *deprecated* с релацией `REPLACED_BY = 91056-5` («Cortisol \[Mass/volume\] in Serum or Plasma --specimen» — новая каноническая форма с явным specimen-qualifier).
-Reference layer обновляет внутренние таблицы: `reference_layer.loinc_version = "2.82"`. **Существующий mapping ****`map_2024_03_15_abc123`**** не трогается — он immutable.**
+Reference layer обновляет внутренние таблицы: `reference_layer.loinc_version = "2.82"`. **Существующий mapping ****`map_2024-03-15_abc123`**** не трогается — он immutable.**
 ## Retrieval после релиза (2026-06-01, LOINC 2.82 active)
-Потребитель запрашивает `GET /mapping/map_2024_03_15_abc123`. Reference layer возвращает сохранённый result, **но вычисляет ****`current_version_status`**** в момент retrieval**:
+Потребитель запрашивает `GET /mapping/map_2024-03-15_abc123`. Reference layer возвращает сохранённый result, **но вычисляет ****`current_version_status`**** в момент retrieval**:
 ```json
 {
 	"status": "success",
-	"mapping_id": "map_2024_03_15_abc123",
+	"mapping_id": "map_2024-03-15_abc123",
 	"primary": {
 		"system": "LOINC",
 		"code": "2143-6",
@@ -150,12 +150,12 @@ Reference layer обновляет внутренние таблицы: `referen
 		"replaced_by": "91056-5",
 		"candidates_returned": 2,
 		"policy_version": "1.0.0",
-		"resolver_version": "2024.03"
+		"resolver_version": "semantic-resolver-v1"
 	}
 }
 ```
 Ключевые наблюдения:
-- `primary.loinc_code` всё ещё `2143-6` — *interpretation immutable*, lab value, маппированный в 2024-м, так и остаётся.
+- `primary.code` всё ещё `2143-6` — *interpretation immutable*, lab value, маппированный в 2024-м, так и остаётся.
 - `audit.loinc_version` = `2.76` — snapshot version, immutable.
 - `audit.current_version_status` = `"replaced"` — вычислено dynamically, signal для потребителя.
 - `audit.replaced_by` = `"91056-5"` — указывает LOINC код-преемник.
@@ -164,14 +164,14 @@ Reference layer обновляет внутренние таблицы: `referen
 ```javascript
 POST /remap
 {
-	"mapping_id": "map_2024_03_15_abc123"
+	"mapping_id": "map_2024-03-15_abc123"
 }
 ```
 Reference layer выполняет новый mapping в текущей версии (LOINC 2.82), на том же input (восстановлен из audit исходного mapping). Результат:
 ```json
 {
 	"status": "success",
-	"mapping_id": "map_2026_06_01_xyz789",
+	"mapping_id": "map_2026-06-01_xyz789",
 	"primary": {
 		"system": "LOINC",
 		"code": "91056-5",
@@ -220,26 +220,26 @@ Reference layer выполняет новый mapping в текущей верс
 			"factor": 1,
 			"path": ["identity"]
 		},
-		"remap_source": "map_2024_03_15_abc123",
+		"remap_source": "map_2024-03-15_abc123",
 		"current_version_status": "current",
 		"replaced_by": null,
 		"candidates_returned": 2,
 		"policy_version": "1.0.0",
-		"resolver_version": "2026.06"
+		"resolver_version": "semantic-resolver-v1"
 	}
 }
 ```
 Ключевые наблюдения:
-- Новый `mapping_id` — `map_2026_06_01_xyz789`. Исходный `map_2024_03_15_abc123` остаётся retrievable.
-- `primary.loinc_code` теперь `91056-5` (преемник).
+- Новый `mapping_id` — `map_2026-06-01_xyz789`. Исходный `map_2024-03-15_abc123` остаётся retrievable.
+- `primary.code` теперь `91056-5` (преемник).
 - `audit.loinc_version` = `2.82`, `mapping_timestamp` сегодняшний.
 - Новое поле `audit.remap_source` — указывает на исходный mapping. Обеспечивает провенанс цепочки remap'ов.
 - `current_version_status` = `"current"`, так как mapping выполнен на latest версии.
 - Score вырос (0.88 → 0.91) — новый код более точно описывает этот specimen (ожидаемый эффект deprecation ради специфичности).
 ## Оба mapping_id остаются retrievable
 Потребитель решает, какой mapping канонический для этой lab value:
-- **Clinical record retrieval** («покажи мне результат как он был в 2024») → `map_2024_03_15_abc123`.
-- **Current-state queries** («мои последние cortisol-результаты в latest LOINC») → `map_2026_06_01_xyz789`.
+- **Clinical record retrieval** («покажи мне результат как он был в 2024») → `map_2024-03-15_abc123`.
+- **Current-state queries** («мои последние cortisol-результаты в latest LOINC») → `map_2026-06-01_xyz789`.
 - **Audit trail / compliance** («что именно было в EHR на момент X») → исходный.
 Никакого автоматического предпочтения между ними на стороне реф-слоя. Это в логике ADR-0001 А4: «референсный слой не принимает решений за потребителя».
 ## Что валидирует этот пример
@@ -261,3 +261,4 @@ Reference layer выполняет новый mapping в текущей верс
 - 2026-05-29 — v1.0 draft. Валидирует ADR-0005 полным циклом snapshot → retrieval с deprecation signal → explicit remap. Surfaced: `remap_source` (патч ADR-0005), audit snapshot vs computed split, dedup по (source, version).
 - 2026-05-29 — все surface findings закрыты в патче ADR-0005 (remap_source, snapshot/computed split, idempotency dedup-ключ).
 - 2026-06-05 — все три envelope приведены к полному канону output.schema: добавлены `status`, `primary`/`alternatives` с `system`+`code`, `value.string`, отдельный `context`-объект и все 16 audit-полей (включая `method_alias_group`, `ucum_conversion`, reproducibility-поля).
+- 2026-06-27 — v2.1.0: mapping_id → дефисная дата; resolver_version унифицирован к semantic-resolver-v1 (remap driven by loinc_version, не resolver); прозовые primary.loinc_code → primary.code

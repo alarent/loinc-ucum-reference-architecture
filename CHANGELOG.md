@@ -3,6 +3,23 @@
 Все значимые изменения проекта документируются в этом файле.
 Формат основан на «Keep a Changelog», проект следует Semantic Versioning.
 
+## [2.1.0] — 2026-06-27
+
+### Changed
+
+- **Устранение дрейфа документации и примеров относительно `schemas/output.schema.json`.** Контрактные схемы по сути не меняются — правятся описания/комментарии и worked examples.
+- `value.unit` — семантика уточнена: «единица как сообщил источник, в UCUM-нотации, до конверсии»; дословный ввод — в `input_echo.raw_unit` (`schemas/output.schema.json`, `schemas/README.md`, examples 00/06).
+- `context_completeness` — добавлено явное правило (ADR-0004 §4): поле определено, если значение конкретно ИЛИ `not_applicable`; `null` = не определено; `minimal` = определённых нет. Убрана неоднозначность «≤1».
+- ADR-0001 — naming приведён к `output.schema.json`: `loinc_code` → `primary.{system,code,display}`; `alternatives[]` — только LOINC (`system: "LOINC"` const); не-LOINC secondary — в audit/input_echo (structured-поле Phase 2).
+- ADR-0006 §6 — синтаксический отказ `INPUT_SCHEMA_VIOLATION` отделён от семантического `PRECONDITION_FAILED`; назван код `LOINC_NO_CANDIDATE` (stage `loinc_resolution`).
+- `mapping_id` — задокументировано соглашение `map_YYYY-MM-DD_[<slug>_]<hash>` (pattern в схеме не enforced).
+
+### Fixed
+
+- `examples/00` — `raw_unit: ""` (schema-невалидно) → `null` для качественного теста; primary глюкозы `14749-6` → `15074-8` (Blood) под `sample_type=blood`; `candidates_returned` `2` → `1`.
+- `examples/05` — `mapping_id` к дефисному формату дат; `resolver_version` унифицирован к `semantic-resolver-v1`; прозовые `primary.loinc_code` → `primary.code`.
+- `examples/04` — добавлен альтернативный сценарий отказа `LOINC_NO_CANDIDATE`.
+
 ## [2.0.0] — 2026-06-22
 
 ### Changed

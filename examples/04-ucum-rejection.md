@@ -73,9 +73,15 @@
 - `raw_unit = "U/mL"` для гормонального теста, где `U` без указания типа активности (IU? mIU? arbitrary units?)
 - UCUM формально парсит `U` как единицу активности фермента, но для теста-потребителя это не разрешается без method-context
 - Срабатывает `UCUM_AMBIGUOUS_UNIT` с `stage_failed: "ambiguity_resolution"`; candidate-интерпретации перечисляются в `error.message` (структурный список — кандидат на `audit.extensions`; ядро `error` строгое: code / message / stage_failed)
+### LOINC_NO_CANDIDATE
+- `raw_name` количественного теста, для которого транслитерация и UCUM-парсинг проходят (`raw_unit` валиден) — отказ не на стороне единиц
+- Семантический resolver не возвращает ни одного LOINC-кандидата выше порога: в текущем snapshot LOINC нет подходящего кода для аналита
+- Срабатывает `LOINC_NO_CANDIDATE` с `stage_failed: "loinc_resolution"`; `primary`/`value`/`context` отсутствуют, `alternatives` пуст по семантике (кандидатов нет)
+- Код входит в error-enum `output.schema.json` и в «два слоя отказа» ADR-0006 §6 (mapping-level rejection)
 ## Выявленные вопросы (новые)
 - **Rejection envelope зафиксирован в Schemas.** Закрыто: ADR-0006 ввёл unified `output.schema.json` с `oneOf: [success_envelope, rejected_envelope]` по дискриминатору `status`
 - **Локализация error.message.** Сейчас message сформулирован по-английски с inlined raw-данными. Для UI на русском нужен либо переводимый template-id (`error_code → message_template`), либо разделение `error.code` (machine-readable) и `error.message_i18n` (localized). Откладывается в v1.1
 - **Rejected-результаты получают полноценный ****`mapping_id`****.** Закрыто: `output.schema.json` требует `mapping_id` в обеих ветках oneOf (ADR-0006 rejection persistence) — отклонение имеет stable id, его можно retrieved и при исправлении выше вызвать `/remap`
 ## История изменений
 - 2026-05-30 — создан worked example 04 (UCUM rejection, scenario `UCUM_NO_CONVERSION_PATH`)
+- 2026-06-27 — v2.1.0: добавлен альтернативный rejection LOINC_NO_CANDIDATE (stage loinc_resolution, пустой alternatives)

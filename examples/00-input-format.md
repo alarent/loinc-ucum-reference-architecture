@@ -2,7 +2,7 @@
 **Уровень внедрения:** L1
 Иллюстративный сценарий: реалистичный multi-biomarker input от lab-aggregator'а проходит preconditions validation. Проверяет границу «выше по потоку → ядро нормализации»: что принимается, что отвергается, и в какой форме возвращается результат валидации.
 ## Контекст и input
-Стандартная панель check-up'а из 4 биомаркеров, собранная лабораторией-агрегатором. Покрывает типичные граничные случаи в сырых полях: запятая в числе, below-LOQ значение, пустой unit, null в raw_ref, comment с method-маркером.
+Стандартная панель check-up'а из 4 биомаркеров, собранная лабораторией-агрегатором. Покрывает типичные граничные случаи в сырых полях: запятая в числе, below-LOQ значение, null в raw_unit, null в raw_ref, comment с method-маркером.
 ```json
 {
   "lab": "lab-aggregator-00",
@@ -33,7 +33,7 @@
     {
       "raw_name": "Антитела к HBs",
       "raw_value": "отрицательно",
-      "raw_unit": "",
+      "raw_unit": null,
       "raw_ref": null,
       "raw_comment": "Качественный тест"
     }
@@ -48,7 +48,7 @@
 - `"2026-05-15"` — valid ISO 8601 date (no time-of-day, no timezone — OK для даты забора)
 ### Шаг 3 · Type-shape биомаркеров
 - `raw_value` — всегда string, даже для чисел. Это принципиально: сохраняет исходную форму (`"5,4"`, `"< 0.5"`, `"отрицательно"`) для семантического парсинга ниже по pipeline
-- `raw_unit` — может быть пустой строкой (`""`), но не null. Пустота — валидный сигнал для качественных тестов (Anti-HBs)
+- `raw_unit` — для качественных тестов передаётся как `null` (Anti-HBs); пустая строка (`""`) запрещена preconditions — допустимы только `null` или непустая строка
 - `raw_ref`, `raw_comment` — nullable. null означает «управляется ниже по потоку», пустая строка — «upstream передал явный пустой комментарий» (разный семантический сигнал)
 ### Шаг 4 · Что НЕ делается на этом уровне
 - Не транслитерируется `raw_unit` (`ммоль/л` остаётся как есть) — это работа ADR-0002
@@ -67,13 +67,13 @@
       "mapping_id": "map_2026-05-15_glucose_a3f2",
       "primary": {
         "system": "LOINC",
-        "code": "14749-6",
-        "display": "Glucose [Moles/volume] in Serum or Plasma"
+        "code": "15074-8",
+        "display": "Glucose [Moles/volume] in Blood"
       },
       "value": {
         "numeric": 5.4,
         "string": null,
-        "unit": "ммоль/л",
+        "unit": "mmol/L",
         "ucum_canonical": "mmol/L"
       },
       "context": {
@@ -104,7 +104,7 @@
         "remap_source": null,
         "current_version_status": "current",
         "replaced_by": null,
-        "candidates_returned": 2,
+        "candidates_returned": 1,
         "policy_version": "1.0.0",
         "resolver_version": "semantic-resolver-v1"
       }
@@ -142,7 +142,7 @@
 ## Что валидирует в preconditions
 - Граница источник → нормализация четкая: preconditions — это syntax и type-shape, не семантика. Маппинг-ошибки (UCUM-reject в example 04) живут ниже, не здесь
 - raw_\* поля — всегда string (даже для чисел), что сохраняет traceability и предотвращает преждевременную нормализацию на стороне источника
-- Различие `""` и `null` в raw_unit/raw_ref/raw_comment фиксирует разный семантический сигнал, как в ADR-0004 различие `null` и `"not_applicable"`
+- Различие `""` и `null` в raw_ref/raw_comment фиксирует разный семантический сигнал, как в ADR-0004 различие `null` и `"not_applicable"` (для raw_unit `""` запрещён — только `null` или непустая строка)
 ## Выявленные вопросы (новые)
 - **`POST /v1/map`**** shape: 1 input = N envelopes или 1 input = 1 envelope?** ADR-0006 явно не разрешил: input.schema имеет `biomarkers` как array, но в example 04 input был с 1 biomarker'ом и envelope выводился в singular shape. Нужен patch ADR-0006: `/v1/map` возвращает `{ preconditions, input_id, envelopes: [...] }` (плюрал), или input ограничивается 1 biomarker'ом (тогда batch — обязательно в v1.0, не Phase 2)
 - **Граничные случаи preconditions, не покрытые явно:** `biomarkers: []` (пустой array) — валидный no-op или PRECONDITION_FAILED? `raw_value: ""` (пустая строка) — валидно или нет? Дубли `raw_name` в biomarkers (два «Глюкоза» подряд, реальный кейс retest) — валидно или нет? Нужны явные решения в [preconditions.md](../docs/preconditions.md) или input.schema constraints
@@ -150,3 +150,4 @@
 ## История изменений
 - 2026-05-30 — создан worked example 00 (Input format, multi-biomarker check-up panel)
 - 2026-06-05 — output-блоки приведены к map-response.schema: passed-ветка показывает wrapper \{ preconditions, input_id, envelopes, audit \}, failed-ветка дополнена input_id и кодом INPUT_SCHEMA_VIOLATION; input_id в формате sha256
+- 2026-06-27 — v2.1.0: value.unit глюкозы → UCUM-токен (ммоль/л → mmol/L); raw_unit Anti-HBs "" → null; candidates_returned 2 → 1; primary 14749-6 → 15074-8 (Blood) под sample_type=blood

@@ -31,8 +31,8 @@
 - Список error codes расширяется только аддитивно; существующий код не меняет `stage_failed` или семантику reject
 - Снятие любого поля или сужение enum → требует major bump
 ### 6. Два слоя отказа: preconditions vs mapping-level rejection
-- **Preconditions failure** — input не прошёл синтаксическую валидацию (input.schema). Возвращается на верхнем уровне ответа: `{ preconditions: "failed", error: { code: "PRECONDITION_FAILED", message, path }, audit }`. `envelopes` отсутствует, `mapping_id` не создаётся, Ядро нормализации не вызывается
-- **Mapping-level rejection** — input прошёл preconditions, но конкретный biomarker не маппится (UCUM reject, missing context, low-score fail). Появляется внутри `envelopes[i]` как envelope с `status: "rejected"` (секции 2–3). Mapping_id создаётся, persist в audit log
+- **Preconditions failure** — input не прошёл валидацию до вызова ядра. Два кода: `INPUT_SCHEMA_VIOLATION` (синтаксическое нарушение input.schema — тип/форма) и `PRECONDITION_FAILED` (семантические инварианты входа, см. ../preconditions.md). Возвращается на верхнем уровне ответа: `{ preconditions: "failed", error: { code, message, path }, audit }`. `envelopes` отсутствует, `mapping_id` не создаётся, Ядро нормализации не вызывается
+- **Mapping-level rejection** — input прошёл preconditions, но конкретный biomarker не маппится (UCUM reject, missing context, отсутствие LOINC-кандидата — `LOINC_NO_CANDIDATE`, stage `loinc_resolution`). Появляется внутри `envelopes[i]` как envelope с `status: "rejected"` (секции 2–3). Mapping_id создаётся, persist в audit log
 - Один ответ может комбинировать success+rejected внутри `envelopes` по biomarker'ам, но только при successful preconditions. Preconditions-failure всегда terminates до построения envelopes
 - Worked example 00 иллюстрирует обе ветки
 ## Альтернативы
@@ -70,3 +70,4 @@
 - 2026-05-30 — patch: явная cardinality `/v1/map` (1 input → N envelopes), добавлена секция «Два слоя отказа» (preconditions vs mapping-level), уточнены cardinality `/v1/remap` и `GET /v1/mappings/{id}`. Триггер: findings из worked example 00
 - 2026-05-31 — housekeeping pass: закрыты все 6 open question (4 deferred в Roadmap, 1 в ADR candidates backlog, 1 делегирован [preconditions.md](../preconditions.md) + input.schema.json)
 - 2026-06-22 — v2.0.0 (breaking): `input_echo` стал обязательным в success-ветке envelope, симметрично rejected. Полный audit trail на success-пути + verbatim-сохранение `raw_ref` (включая стратифицированные референсы). Обновлены output.schema.json, worked examples 00–03/05/06, README, architecture, Schemas · индекс
+- 2026-06-27 — v2.1.0: §6 — синтаксический отказ = `INPUT_SCHEMA_VIOLATION` vs семантический `PRECONDITION_FAILED`; назван код `LOINC_NO_CANDIDATE` (mapping-level, stage `loinc_resolution`)

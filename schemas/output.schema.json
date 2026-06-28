@@ -14,7 +14,7 @@
       "additionalProperties": false,
       "properties": {
         "status": { "const": "success" },
-        "mapping_id": { "type": "string", "minLength": 1 },
+        "mapping_id": { "type": "string", "minLength": 1, "description": "Соглашение: map_YYYY-MM-DD_[<slug>_]<hash> (дата создания; опциональный slug аналита; hash). Pattern в схеме не задаётся намеренно." },
         "primary": { "$ref": "#/$defs/primary_coding" },
         "value": { "$ref": "#/$defs/value" },
         "context": { "$ref": "#/$defs/context" },
@@ -32,7 +32,7 @@
       "additionalProperties": false,
       "properties": {
         "status": { "const": "rejected" },
-        "mapping_id": { "type": "string", "minLength": 1 },
+        "mapping_id": { "type": "string", "minLength": 1, "description": "Соглашение: map_YYYY-MM-DD_[<slug>_]<hash> (дата создания; опциональный slug аналита; hash). Pattern в схеме не задаётся намеренно." },
         "error": { "$ref": "#/$defs/error" },
         "input_echo": { "$ref": "#/$defs/input_echo" },
         "audit": { "$ref": "#/$defs/audit_rejected" }
@@ -66,7 +66,7 @@
       "properties": {
         "numeric": { "type": ["number", "null"] },
         "string": { "type": ["string", "null"], "minLength": 1 },
-        "unit": { "type": ["string", "null"], "minLength": 1, "description": "Russian-convention unit для UI" },
+        "unit": { "type": ["string", "null"], "minLength": 1, "description": "reported unit as UCUM token (transliterated, pre-conversion); verbatim source unit in input_echo.raw_unit" },
         "ucum_canonical": { "type": ["string", "null"], "minLength": 1, "description": "Strict UCUM canonical form" }
       },
       "oneOf": [
@@ -100,7 +100,8 @@
         "method": { "$ref": "#/$defs/context_field" },
         "context_completeness": {
           "type": "string",
-          "enum": ["full", "partial", "minimal"]
+          "enum": ["full", "partial", "minimal"],
+          "description": "Доля определённых применимых context-полей (ADR-0004 §4). Поле определено, если значение конкретно ИЛИ not_applicable; null = не определено. full — определены все применимые; partial — определено ≥1, но не все; minimal — определённых нет. not_applicable исключается из знаменателя."
         }
       }
     },
